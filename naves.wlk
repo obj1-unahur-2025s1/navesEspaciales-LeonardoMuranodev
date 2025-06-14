@@ -1,11 +1,26 @@
 class Nave {
   var velocidad
   var dirRespectoAlSol
+  var combustible
 
+  //Metodos de consulta
   method dirRespectoAlSol() = limitadorSol.limite(dirRespectoAlSol)
 
+  method estaTranquila() = combustible > 4000 && velocidad < 12000
+
   //Metodos de indicacion
-  method prepararViaje() {}
+  method prepararViaje() {
+    self.cargarCombustible(30000)
+    self.acelerar(5000)
+  }
+
+  method cargarCombustible(cuanto) {
+    combustible += cuanto
+  }
+
+  method descargarCombustible(cuanto) {
+    combustible = 0.max(combustible - cuanto)
+  }
 
   method acelerar(cuanto) {
     velocidad = 100000.min(velocidad + cuanto)
@@ -43,7 +58,11 @@ object limitadorSol{
 class NaveBaliza inherits Nave {
   var colorBaliza
 
+  //Metodos de consulta
+  override method estaTranquila() = super() && colorBaliza != "rojo"
+
   override method prepararViaje() {
+    super()
     self.cambiarColorDeBaliza("verde")
     self.paraleloAElSol()
   }
@@ -59,6 +78,7 @@ class NavePasajeros inherits Nave {
   var racionesBebidas
 
   override method prepararViaje() {
+    super()
     self.cargarRacionComida(4 * cantPasajeros)
     self.cargarRacionBebidas(6 * cantPasajeros)
     self.acercarseUnPocoAlSol()
@@ -81,12 +101,19 @@ class NavePasajeros inherits Nave {
   }
 }
 
+class NaveHospital inherits NavePasajeros {
+  var quirofanosPreparados
+
+  override method estaTranquila() = super() && !quirofanosPreparados
+}
+
 class NaveCombate inherits Nave {
   var estaInvisible
   var misilesDesplegados
   const property mensajesEmitidos = []
 
   //Metodos de consulta
+  override method estaTranquila() = super() && !misilesDesplegados
   method estaInvisible() = estaInvisible
   method misilesDesplegados() = misilesDesplegados
   method esEscueta() = mensajesEmitidos.any({m => m.length() > 30})
@@ -96,6 +123,7 @@ class NaveCombate inherits Nave {
 
   //Metodos de indicacion
   override method prepararViaje() {
+    super()
     self.ponerseVisible()
     self.replegarMisiles()
     self.acelerar(15000)
@@ -122,3 +150,7 @@ class NaveCombate inherits Nave {
     mensajesEmitidos.add(unMensaje)
   }
 }
+
+class NaveCombateSigilosa inherits NaveCombate {
+  override method estaTranquila() = super() && !estaInvisible
+  }
