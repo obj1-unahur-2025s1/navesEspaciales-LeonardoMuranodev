@@ -1,0 +1,128 @@
+import naves.*
+
+describe "Test del tp de naves basicos" {
+    const naveBaliza = new NaveBaliza(colorBaliza="azul", velocidad=10000, dirRespectoAlSol=0, combustible=2000)
+    const naveCombate = new NaveCombate(velocidad=95000, dirRespectoAlSol=0, combustible=1000, estaInvisible=false, misilesDesplegados=false) 
+    const navePasajeros = new NavePasajeros(velocidad=5000, dirRespectoAlSol=8, combustible=3000, cantPasajeros=5, racionesComida=10, racionesBebidas=15)
+
+    test "SI para la naveBaliza aceleramos 50000 y desaceleramos 20000 y nos acercamos un poco al sol tres veces; la velocidad deberia ser 40000 y la direccion 3" {
+        naveBaliza.acelerar(50000)
+        naveBaliza.desacelerar(20000)
+        naveBaliza.acercarseUnPocoAlSol()
+        naveBaliza.acercarseUnPocoAlSol()
+        naveBaliza.acercarseUnPocoAlSol()
+        assert.equals(40000, naveBaliza.velocidad())
+        assert.equals(3, naveBaliza.dirRespectoAlSol())
+    }
+
+    test "SI para la naveCombate aceleramos 10000 llegara al limite superior de 100000 y desaceleramos 120000 llegara al limite inferior de 0" {
+        naveCombate.acelerar(10000)
+        assert.equals(100000, naveCombate.velocidad())
+        naveCombate.desacelerar(120000)
+        assert.equals(0, naveCombate.velocidad())
+    }
+
+    test "SI para la navePasajeros nos acercamos al sol tres veces llegara al limite superior de 10 y si escapamosDelSol y nos alejamos un poco llegara al limite inferior de -10" {
+        navePasajeros.acercarseUnPocoAlSol()
+        navePasajeros.acercarseUnPocoAlSol()
+        navePasajeros.acercarseUnPocoAlSol()
+        assert.equals(10, navePasajeros.dirRespectoAlSol())
+        navePasajeros.escaparDelSol()
+        navePasajeros.alejarseUnPocoAlSol()
+        assert.equals(-10, navePasajeros.dirRespectoAlSol())
+    }
+}
+
+describe "Test de Viajes de las naves" {
+    const naveBaliza = new NaveBaliza(colorBaliza="azul", velocidad=1000, dirRespectoAlSol=5, combustible=0)
+    const naveCombate = new NaveCombate(velocidad=3000, dirRespectoAlSol=2, combustible=1000, estaInvisible=true, misilesDesplegados=true) 
+    const navePasajeros = new NavePasajeros(velocidad=2000, dirRespectoAlSol=-3, combustible=500, cantPasajeros=10, racionesComida=0, racionesBebidas=0)
+
+    method initialize() {
+        naveBaliza.prepararViaje()
+        navePasajeros.prepararViaje()
+        naveCombate.prepararViaje()
+    }
+
+    test "Al viajar con Nave baliza: color baliza es verde, dirRespectoAlSol es 0 el combustible es 30000 y la velocidad = 6000 "{
+        assert.equals("verde", naveBaliza.colorBaliza())
+        assert.equals(0, naveBaliza.dirRespectoAlSol())
+        assert.equals(6000, naveBaliza.velocidad())
+        assert.equals(30000, naveBaliza.combustible())
+    }
+
+    test "Al viajar con Nave pasajeros: las raciones comida son 40, y las debebidas son 60 dirRespectoAlSol es -2 el combustible es 30500 y la velocidad = 7000 "{
+        assert.equals(40, navePasajeros.racionesComida())
+        assert.equals(60, navePasajeros.racionesBebidas())
+        assert.equals(-2, navePasajeros.dirRespectoAlSol())
+        assert.equals(7000, navePasajeros.velocidad())
+        assert.equals(30500, navePasajeros.combustible())
+    }
+
+    test "Al viajar con Nave Combate: no es invisible y estan desplegados los misiles, el combustible es 31000 y la velocidad = 23000 y el ultimmo mensaje es Saliendo en Mision"{
+        assert.equals(23000, naveCombate.velocidad())
+        assert.equals(31000, naveCombate.combustible())
+        assert.notThat(naveCombate.estaInvisible())
+        assert.notThat(naveCombate.misilesDesplegados())
+        assert.equals("Saliendo en mision", naveCombate.ultimoMensaje())
+    }
+}
+
+describe "Test re Naves: reaccion ante amenazas y tranquilidad" {
+
+    const naveBaliza = new NaveBaliza(colorBaliza="azul", velocidad=5000, dirRespectoAlSol=-5, combustible=8000)
+    const naveCombate = new NaveCombate(velocidad=10000, dirRespectoAlSol=0, combustible=5000, estaInvisible=false, misilesDesplegados=false) 
+    const navePasajeros = new NavePasajeros(velocidad=5000, dirRespectoAlSol=2, combustible=6000, cantPasajeros=5, racionesComida=20, racionesBebidas=30)
+    const naveHospital = new NaveHospital(velocidad=6000, dirRespectoAlSol=-1, combustible=8000,cantPasajeros=8, racionesComida=32, racionesBebidas=50, quirofanosPreparados=false) 
+    const naveSigilosa = new NaveCombateSigilosa(velocidad=7000, dirRespectoAlSol=0, combustible=9000, estaInvisible=false, misilesDesplegados=false) 
+
+
+    method initialize() {
+        naveBaliza.recibirAmenaza()
+        naveCombate.recibirAmenaza()
+        navePasajeros.recibirAmenaza()
+        naveHospital.recibirAmenaza()
+        naveSigilosa.recibirAmenaza()
+    }
+
+
+  test "La naveBaliza recibe amenaza, su direccion es 10, y cambia el color de la balza a rojo, por lo que esta intranquila y tampoco esta de relajo" {
+    assert.equals("rojo", naveBaliza.colorBaliza())
+    assert.equals(10, naveBaliza.dirRespectoAlSol())
+    assert.notThat(naveBaliza.estaTranquila())
+    assert.notThat(naveBaliza.estaDeRelajo())
+  }
+
+  test "La navePasajero recibe amenaza, su velocidad es 10000, sus raciones de comida son 15, y las de bebida 20 y  esta tranquila. Esta de relajo porque tienePocoActividad y cumplas las condiciones basicas de estar tranquila" {
+    assert.equals(15, navePasajeros.racionesComida())
+    assert.equals(20, navePasajeros.racionesBebidas())
+    assert.equals(10000, navePasajeros.velocidad())
+    assert.that(navePasajeros.estaTranquila())
+    assert.that(navePasajeros.estaDeRelajo())
+  }
+
+  test "La naveCombate recibe amenaza, su direccion es 2, y su ultimo mensaje es Amenaza recibida. Esta trnquila y de relajo" {
+    assert.equals(2, naveCombate.dirRespectoAlSol())
+    assert.equals("Amenaza recibida", naveCombate.ultimoMensaje())
+    assert.that(naveCombate.estaTranquila())
+    assert.that(naveCombate.estaDeRelajo())
+  }
+
+  test "La naveHospital recibe amenaza, su velocidad es 12000, sus raciones de comida son 24, y las de bebida 34, sus quirofanos preparados y no esta tranquila por la velocidad y los quirofanos, ademas no esta de relajo" {
+    assert.equals(24, naveHospital.racionesComida())
+    assert.equals(34, naveHospital.racionesBebidas())
+    assert.equals(12000, naveHospital.velocidad())
+    assert.that(naveHospital.quirofanosPreparados())
+    assert.notThat(naveHospital.estaTranquila())
+    assert.notThat(naveHospital.estaDeRelajo())
+  }
+
+    test "La naveCombateSigilosa recibe amenaza, su direccion es 2, 0 y su ultimo mensaje es Amenaza recibida, ademas estaInvisible y tiene los misiles desplegados, no esta tranquila ya que es visible y por lo tanto, no esta de relajo" {
+    assert.equals(2, naveSigilosa.dirRespectoAlSol())
+    assert.equals("Amenaza recibida", naveSigilosa.ultimoMensaje())
+    assert.that(naveSigilosa.estaInvisible())
+    assert.that(naveSigilosa.misilesDesplegados())
+    assert.notThat(naveSigilosa.estaTranquila())
+    assert.notThat(naveSigilosa.estaDeRelajo())
+  }
+}
